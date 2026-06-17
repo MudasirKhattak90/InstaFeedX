@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
+import kotlin.math.abs
 
 // colors
 private val BgDark = Color(0xFF0D0D12)
@@ -65,8 +66,8 @@ fun UploadScreen() {
     var uploadSuccess by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
 
-    val randomSeed by remember { mutableIntStateOf((1..1000).random()) }
-    val previewUrl = "https://picsum.photos/seed/$randomSeed/600/600"
+    val docRef = remember { FirebaseFirestore.getInstance().collection("posts").document() }
+  val  previewUrl = "https://picsum.photos/seed/${docRef.id}/600/600"
 
     Box(
         modifier = Modifier
@@ -189,9 +190,7 @@ fun UploadScreen() {
                     "timestamp" to System.currentTimeMillis()
                 )
 
-                FirebaseFirestore.getInstance()
-                    .collection("posts")
-                    .add(post)
+             docRef.set(post)
                     .addOnSuccessListener {
                         isUploading = false
                         uploadSuccess = true

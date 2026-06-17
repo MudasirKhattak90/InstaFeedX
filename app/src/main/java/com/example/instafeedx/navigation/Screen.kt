@@ -9,6 +9,7 @@ import okhttp3.Route
 
 sealed class Screen(val route: String) {
 
+    object Splash : Screen("splash_screen")
     object Login : Screen("login_screen")
     object Feed : Screen("feed_screen")
     object Upload : Screen("upload_screen")

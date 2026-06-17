@@ -97,12 +97,6 @@ fun FeedScreen(viewModel: PostViewModel = viewModel()) {
                 }
             }
 
-            item {
-                LaunchedEffect(viewModel.posts.size) {
-                    viewModel.loadPost()
-                }
-            }
-
 
         }
 

@@ -25,12 +25,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.instafeedx.screen.FeedScreen
 import com.example.instafeedx.screen.LoginScreen
 import com.example.instafeedx.screen.ProfileScreen
+import com.example.instafeedx.screen.SplashScreen
 import com.example.instafeedx.screen.UploadScreen
 import com.example.instafeedx.viewmodel.AuthState
 import com.example.instafeedx.viewmodel.AuthViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
 
 // Colors(same as Login Screen theme)
 
@@ -75,7 +77,7 @@ fun AppNavigation(googleSignInClient: GoogleSignInClient) {
     Scaffold(
         containerColor = BgDark,
         bottomBar = {
-            if (showBottomNav){
+            if (showBottomNav) {
                 NavigationBar(
                     containerColor = NavBg,
                     tonalElevation = Unspecified
@@ -85,8 +87,8 @@ fun AppNavigation(googleSignInClient: GoogleSignInClient) {
                         NavigationBarItem(
                             selected = isSelected,
                             onClick = {
-                                navController.navigate(item.route){
-                                    popUpTo(navController.graph.findStartDestination().id){
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
                                     }
                                     launchSingleTop = true
@@ -96,7 +98,7 @@ fun AppNavigation(googleSignInClient: GoogleSignInClient) {
                             icon = {
                                 Icon(
                                     imageVector = if (isSelected)
-                                    item.selectedIcon else item.selectedIcon,
+                                        item.selectedIcon else item.selectedIcon,
                                     contentDescription = item.label
                                 )
                             },
@@ -116,11 +118,23 @@ fun AppNavigation(googleSignInClient: GoogleSignInClient) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Login.route,
+            startDestination = Screen.Splash.route,
             modifier = Modifier.padding(innerPadding)
 
 
         ) {
+            composable(Screen.Splash.route) {
+                SplashScreen(
+                    onSplashFinished = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Splash.route) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                )
+            }
+
             composable(Screen.Login.route) {
                 LoginScreen(
                     onGoogleClick = {
@@ -128,7 +142,8 @@ fun AppNavigation(googleSignInClient: GoogleSignInClient) {
                     },
                     onLoginSuccess = {
                         navController.navigate(Screen.Feed.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true
+                            popUpTo(Screen.Login.route) {
+                                inclusive = true
 
                             }
                         }
@@ -143,14 +158,19 @@ fun AppNavigation(googleSignInClient: GoogleSignInClient) {
                 UploadScreen()
             }
             composable(Screen.Profile.route) {
-                ProfileScreen()
+                ProfileScreen(
+                    onLogout = {
+                        authViewModel.logout()
+                        FirebaseAuth.getInstance().signOut()
+                        googleSignInClient.signOut()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(navController.graph.id) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                )
             }
         }
-
     }
-
-
-
-
-
 }
